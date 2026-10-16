@@ -45,6 +45,23 @@
                         <li class="nav-item">
                             <a class="nav-link active" asp-controller="Account" asp-action="Register"> Register </a>
                         </li>
+                       @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+{
+<li class="nav-item dropdown">
+
+<a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-
+haspopup="true" aria-expanded="false">Administration</a>
+
+<div class="dropdown-menu">
+<a class="dropdown-item" asp-area="" asp-controller="Admin" asp-action="CreateRole">Create
+Role</a>
+<div class="dropdown-divider"></div>
+<a class="dropdown-item" asp-area="" asp-controller="Admin" asp-action="ListRoles">List
+Roles</a>
+</div>
+</li>
+}
+                        
                     </ul>
 
                     <!-- Formulaire de recherche -->
@@ -52,6 +69,44 @@
                         <input class="form-control me-sm-2" type="search" placeholder="Search" name="val">
                         <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
                     </form>
+                </div>
+                @using Microsoft.AspNetCore.Identity
+            @inject SignInManager<IdentityUser> SignInManager
+<div class="collapse navbar-collapse" id="collapsibleNavbar">
+                    <ul class="navbar-nav ml-auto">
+                        @*If the user is signed-in display Logout link*@
+
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            <li class="nav-item">
+
+                                <form method="post" asp-controller="account" asp-action="logout">
+                                    <button type="submit" style="width:auto"
+                                            class="nav-link btn btn-link py-0">
+
+                                        Logout @User.Identity.Name
+                                    </button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+
+                                <a class="nav-link" asp-controller="Account" asp-action="Register">
+
+                                    Register
+                                </a>
+                            </li>
+                            <li class="nav-item">
+
+                                <a class="nav-link" asp-controller="Account" asp-action="Login">
+
+                                    Login
+                                </a>
+                            </li>
+                        }
+                    </ul>
                 </div>
             </div>
         </nav>
@@ -72,6 +127,8 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/CustomScript.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
 </body>
 </html>

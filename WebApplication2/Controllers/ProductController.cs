@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using WebApplication2.Models;
 using WebApplication2.Models.Repositories;
@@ -6,6 +7,7 @@ using WebApplication2.ViewModels;
 
 namespace WebApplication2.Controllers
 {
+    [Authorize(Roles = "Admin,Manager")]
     public class ProductController : Controller
     {
         readonly IProductRepository ProductRepository;
@@ -22,6 +24,7 @@ namespace WebApplication2.Controllers
         }
 
         // GET: Product
+        [AllowAnonymous]
         public ActionResult Index()
         {
             var Products = ProductRepository.GetAll();

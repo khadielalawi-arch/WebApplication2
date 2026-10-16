@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\js\CustomScript.js" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!--PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.13" /-->
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.12" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.12" />
@@ -18,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\images\" />
+    <None Include="wwwroot\js\CustomScript.js" />
   </ItemGroup>
 
 </Project>
