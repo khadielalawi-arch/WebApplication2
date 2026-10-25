@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -15,6 +17,13 @@
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Gestion des Articles</a>
 
+                <!-- Bouton afficher / cacher le menu latéral des catégories -->
+                <button class="btn btn-outline-light me-2" type="button" id="btnToggleMenu"
+                        title="Afficher / cacher les catégories">
+                    <img src="~/images/categorie.png" alt="Ouvrir la liste des catégories"
+                         id="toggleMenu" style="height:24px;" />
+                </button>
+
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                         data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
@@ -27,41 +36,29 @@
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
 
-                        <!-- Menu déroulant : Liste d'articles -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                                data-bs-toggle="dropdown" aria-expanded="false">
                                 Liste d'articles
                             </a>
                             <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDropdown">
-                                <li>
-                                    <a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index">Tous les articles</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Create">Nouvel Article</a>
-                                </li>
+                                <li><a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index">Tous les articles</a></li>
+                                <li><a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Create">Nouvel Article</a></li>
                             </ul>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" asp-controller="Account" asp-action="Register"> Register </a>
-                        </li>
-                       @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
-{
-<li class="nav-item dropdown">
 
-<a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-
-haspopup="true" aria-expanded="false">Administration</a>
-
-<div class="dropdown-menu">
-<a class="dropdown-item" asp-area="" asp-controller="Admin" asp-action="CreateRole">Create
-Role</a>
-<div class="dropdown-divider"></div>
-<a class="dropdown-item" asp-area="" asp-controller="Admin" asp-action="ListRoles">List
-Roles</a>
-</div>
-</li>
-}
-                        
+                        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
+                                   aria-haspopup="true" aria-expanded="false">Administration</a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" asp-area="" asp-controller="Admin" asp-action="CreateRole">Create Role</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" asp-area="" asp-controller="Admin" asp-action="ListRoles">List Roles</a>
+                                </div>
+                            </li>
+                        }
                     </ul>
 
                     <!-- Formulaire de recherche -->
@@ -69,21 +66,14 @@ Roles</a>
                         <input class="form-control me-sm-2" type="search" placeholder="Search" name="val">
                         <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
                     </form>
-                </div>
-                @using Microsoft.AspNetCore.Identity
-            @inject SignInManager<IdentityUser> SignInManager
-<div class="collapse navbar-collapse" id="collapsibleNavbar">
-                    <ul class="navbar-nav ml-auto">
-                        @*If the user is signed-in display Logout link*@
 
+                    <!-- Login / Register / Logout -->
+                    <ul class="navbar-nav ms-2">
                         @if (SignInManager.IsSignedIn(User))
                         {
                             <li class="nav-item">
-
-                                <form method="post" asp-controller="account" asp-action="logout">
-                                    <button type="submit" style="width:auto"
-                                            class="nav-link btn btn-link py-0">
-
+                                <form method="post" asp-controller="Account" asp-action="Logout">
+                                    <button type="submit" style="width:auto" class="nav-link btn btn-link py-0">
                                         Logout @User.Identity.Name
                                     </button>
                                 </form>
@@ -92,18 +82,10 @@ Roles</a>
                         else
                         {
                             <li class="nav-item">
-
-                                <a class="nav-link" asp-controller="Account" asp-action="Register">
-
-                                    Register
-                                </a>
+                                <a class="nav-link" asp-controller="Account" asp-action="Register">Register</a>
                             </li>
                             <li class="nav-item">
-
-                                <a class="nav-link" asp-controller="Account" asp-action="Login">
-
-                                    Login
-                                </a>
+                                <a class="nav-link" asp-controller="Account" asp-action="Login">Login</a>
                             </li>
                         }
                     </ul>
@@ -112,10 +94,23 @@ Roles</a>
         </nav>
     </header>
 
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Menu latéral pour les catégories -->
+            <div class="col-md-2" id="sidebar" style="display: none;">
+                <p></p>
+                <ul class="list-group">
+                    @await Html.PartialAsync("_CategoriesMenu", ViewData["Categories"])
+                </ul>
+            </div>
+
+            <!-- Contenu principal -->
+            <div class="col-md-12" id="mainContent">
+                <main role="main" class="pb-3">
+                    @RenderBody()
+                </main>
+            </div>
+        </div>
     </div>
 
     <footer class="border-top footer text-muted">
@@ -129,6 +124,5 @@ Roles</a>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/CustomScript.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
-
 </body>
 </html>

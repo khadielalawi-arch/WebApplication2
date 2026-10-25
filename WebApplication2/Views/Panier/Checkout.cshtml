@@ -1,0 +1,68 @@
+﻿@model WebApplication2.ViewModels.OrderViewModel
+@{
+    ViewData["Title"] = "CheckOut";
+}
+<h2>Passer la commande</h2>
+<form asp-action="Checkout" method="post">
+    @Html.AntiForgeryToken()
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    <div class="form-group">
+        <label for="Address">Adresse de livraison :</label>
+        <input type="text" class="form-control" id="Address" name="Address" value="@Model.Address" required />
+    </div>
+    <div class="form-group">
+        <label for="PaymentMethod">Méthode de paiement :</label>
+        <select class="form-control" id="PaymentMethod" name="PaymentMethod">
+            <option value="CreditCard">Carte de crédit</option>
+            <option value="Paypal">PayPal</option>
+        </select>
+    </div>
+    
+
+    <div class="form-group">
+        <label>Montant total :</label>
+        <p class="form-control-plaintext">@Model.TotalAmount</p>
+        <input type="hidden" name="TotalAmount" value="@Model.TotalAmount" />
+    </div>
+    @* Champs cachés pour les articles du panier *@
+    @for (int i = 0; i < Model.CartItems.Count; i++)
+    {
+        <input type="hidden" name="CartItems[@i].ProductName" value="@Model.CartItems[i].ProductName" />
+        <input type="hidden" name="CartItems[@i].Quantity" value="@Model.CartItems[i].Quantity" />
+        <input type="hidden" name="CartItems[@i].Price" value="@Model.CartItems[i].Price" />
+    }
+    <button type="submit" class="btn btn-primary">Passer la commande</button>
+</form>
+<h3>Votre panier</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nom du produit</th>
+            <th>Quantité</th>
+            <th>Prix Unitaire</th>
+            <th>Total Ligne</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.CartItems)
+        {
+            <tr>
+                <td>@item.ProductName</td>
+                <td>@item.Quantity</td>
+                <td>@item.Price</td>
+                <td>@(item.Price * item.Quantity)</td>
+            </tr>
+        }
+    </tbody>
+</table>

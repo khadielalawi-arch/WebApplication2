@@ -21,13 +21,18 @@ namespace WebApplication2.Controllers
         [AllowAnonymous]
         public ActionResult Index()
         {
-            var Categories = CategRepository.GetAll();
-            return View(Categories);
+            var categories = CategRepository.GetAll();
+            ViewData["Categories"] = categories;
+
+            return View(categories);
         }
 
         // GET: Category/Details/5
         public ActionResult Details(int id)
         {
+            var categories = CategRepository.GetAll();
+            ViewData["Categories"] = categories;
+
             var category = CategRepository.GetById(id);
             if (category == null)
                 return NotFound();
@@ -37,6 +42,9 @@ namespace WebApplication2.Controllers
         // GET: Category/Create
         public ActionResult Create()
         {
+            var categories = CategRepository.GetAll();
+            ViewData["Categories"] = categories;
+
             return View();
         }
 
@@ -50,12 +58,20 @@ namespace WebApplication2.Controllers
                 CategRepository.Add(c);
                 return RedirectToAction(nameof(Index));
             }
+
+            // Formulaire invalide : on réaffiche la vue, le menu a besoin des catégories
+            var categories = CategRepository.GetAll();
+            ViewData["Categories"] = categories;
+
             return View(c);
         }
 
         // GET: Category/Edit/5
         public ActionResult Edit(int id)
         {
+            var categories = CategRepository.GetAll();
+            ViewData["Categories"] = categories;
+
             var category = CategRepository.GetById(id);
             if (category == null)
                 return NotFound();
@@ -75,12 +91,20 @@ namespace WebApplication2.Controllers
                 CategRepository.Update(c);
                 return RedirectToAction(nameof(Index));
             }
+
+            // Formulaire invalide : on réaffiche la vue, le menu a besoin des catégories
+            var categories = CategRepository.GetAll();
+            ViewData["Categories"] = categories;
+
             return View(c);
         }
 
         // GET: Category/Delete/5
         public ActionResult Delete(int id)
         {
+            var categories = CategRepository.GetAll();
+            ViewData["Categories"] = categories;
+
             var category = CategRepository.GetById(id);
             if (category == null)
                 return NotFound();

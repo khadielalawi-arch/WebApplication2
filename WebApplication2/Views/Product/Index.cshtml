@@ -11,18 +11,33 @@
                 <h5><b>Nom : </b> @product.Name</h5>
                 <h5><b>Prix : </b>@product.Price</h5>
                 <h5><b>Quantité : </b> @product.QteStock</h5>
-                <!--Afficher le nom de la catégorie-->
-                <h5><b>Catégorie : @product.Category.CategoryName </b></h5>
-
+                <!-- Afficher le nom de la catégorie -->
+                <h5><b>Catégorie : @product.Category?.CategoryName </b></h5>
             </div>
-            <!-- Ajout de la classe pour contrôler la taille des images -->
+            <!-- Classe pour contrôler la taille des images -->
             <img class="card-img-top imageThumbnail" src="@photoPath" asp-append-version="true" />
             <div class="card-footer text-center">
                 <a asp-controller="Product" asp-action="Details" asp-route-id="@product.ProductId"
                    class="btn btn-primary m-1">View</a>
-                <a asp-action="Edit" asp-controller="Product" class="btn btn-primary m-1" asp-route-id="@product.ProductId">Edit</a>
-                <a asp-action="Delete" asp-controller="Product" class="btn btn-danger m-1" asp-route-id="@product.ProductId">Delete</a>
+                <a asp-controller="Panier" asp-action="AddProduct" asp-route-id="@product.ProductId"
+                   class="btn btn-outline-secondary">Ajouter Au Panier</a>
             </div>
         </div>
     }
 </div>
+
+<!-- Pagination (affichée seulement quand Index() a calculé TotalPages) -->
+@if (ViewBag.TotalPages != null && ViewBag.TotalPages > 1)
+{
+    <div class="pagination">
+        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+        {
+            <a asp-action="Index"
+               asp-route-categoryId="@ViewBag.SelectedCategoryId"
+               asp-route-page="@i"
+               class="btn @(i == ViewBag.CurrentPage ? "btn-primary" : "btn-secondary") m-1">
+                @i
+            </a>
+        }
+    </div>
+}

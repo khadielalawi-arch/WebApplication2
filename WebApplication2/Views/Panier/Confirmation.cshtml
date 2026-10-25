@@ -1,0 +1,22 @@
+﻿@model WebApplication2.Models.Order
+<h1>Votre commande a été validée avec succès !</h1>
+<p>Merci pour votre achat, @Model.CustomerName ! Votre commande a bien été enregistrée.</p>
+<div class="order-details">
+    <h2>Récapitulatif de votre commande</h2>
+    <div class="detail-row">
+        <span class="detail-label">Numéro de commande :</span>
+        <span class="detail-value">@Model.Id</span>
+    </div>
+    <div class="detail-row">
+        <span class="detail-label">Date :</span>
+        <span class="detail-value">@Model.OrderDate.ToString("dd/MM/yyyy à HH:mm")</span>
+    </div>
+    <div class="detail-row">
+        <span class="detail-label">Montant total :</span>
+        <span class="detail-value">@Model.TotalAmount</span>
+    </div>
+    <div class="detail-row">
+        <span class="detail-label">Adresse de livraison :</span>
+        <span class="detail-value"> @Model.Address.</span>
+    </div>
+</div>

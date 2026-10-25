@@ -23,17 +23,45 @@ namespace WebApplication2.Controllers
             this.hostingEnvironment = hostingEnvironment;
         }
 
-        // GET: Product
+        // GET: Product  (filtre par catégorie + pagination)
         [AllowAnonymous]
-        public ActionResult Index()
+        public IActionResult Index(int? categoryId, int page = 1)
         {
-            var Products = ProductRepository.GetAll();
-            return View(Products);
+            int pageSize = 4; // Nombre de produits par page
+            if (page < 1) page = 1;
+
+            // Catégories pour le menu latéral
+            var categories = CategRepository.GetAll();
+            ViewData["Categories"] = categories;
+
+            // Produits filtrés par catégorie si categoryId est spécifié
+            IQueryable<Product> productsQuery = ProductRepository.GetAllProducts();
+            if (categoryId.HasValue)
+            {
+                productsQuery = productsQuery.Where(p => p.CategoryId == categoryId.Value);
+            }
+
+            // Pagination
+            var totalProducts = productsQuery.Count();
+            var products = productsQuery
+                            .OrderBy(p => p.ProductId)
+                            .Skip((page - 1) * pageSize)
+                            .Take(pageSize)
+                            .ToList();
+
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalProducts / pageSize);
+            ViewBag.CurrentPage = page;
+            ViewBag.SelectedCategoryId = categoryId; // conserve le filtre dans la pagination
+
+            return View(products);
         }
 
         // GET: Product/Details/5
         public ActionResult Details(int id)
         {
+            var categories = CategRepository.GetAll();
+            ViewData["Categories"] = categories;
+
             var product = ProductRepository.GetById(id);
             if (product == null)
                 return NotFound();
@@ -43,8 +71,10 @@ namespace WebApplication2.Controllers
         // GET: Product/Create
         public ActionResult Create()
         {
-            ViewBag.CategoryId = new SelectList(CategRepository.GetAll(),
-                                                "CategoryId", "CategoryName");
+            var categories = CategRepository.GetAll();
+            ViewData["Categories"] = categories;
+
+            ViewBag.CategoryId = new SelectList(categories, "CategoryId", "CategoryName");
             return View();
         }
 
@@ -53,8 +83,11 @@ namespace WebApplication2.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(CreateViewModel model)
         {
-            ViewBag.CategoryId = new SelectList(CategRepository.GetAll(),
-                                               "CategoryId", "CategoryName", model.CategoryId);
+            var categories = CategRepository.GetAll();
+            ViewData["Categories"] = categories;
+
+            ViewBag.CategoryId = new SelectList(categories, "CategoryId", "CategoryName", model.CategoryId);
+
             if (ModelState.IsValid)
             {
                 string uniqueFileName = null;
@@ -90,21 +123,21 @@ namespace WebApplication2.Controllers
             }
 
             // Formulaire invalide : on réaffiche avec la liste des catégories
-           
             return View(model);
         }
 
         // GET: Product/Edit/5
-        // GET: ProductController/Edit/5
         public ActionResult Edit(int id)
-
         {
-            ViewBag.CategoryId = new SelectList(CategRepository.GetAll(),
-            "CategoryId"
-            ,
-            "CategoryName");
+            var categories = CategRepository.GetAll();
+            ViewData["Categories"] = categories;
+
+            ViewBag.CategoryId = new SelectList(categories, "CategoryId", "CategoryName");
 
             Product product = ProductRepository.GetById(id);
+            if (product == null)
+                return NotFound();
+
             EditViewModel productEditViewModel = new EditViewModel
             {
                 ProductId = product.ProductId,
@@ -117,53 +150,51 @@ namespace WebApplication2.Controllers
             return View(productEditViewModel);
         }
 
-        // POST: ProductController/Edit/5
+        // POST: Product/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(EditViewModel model)
         {
-            ViewBag.CategoryId = new SelectList(CategRepository.GetAll(), "CategoryId", "CategoryName");
-            // Check if the provided data is valid, if not rerender the edit view
-            // so the user can correct and resubmit the edit form
+            var categories = CategRepository.GetAll();
+            ViewData["Categories"] = categories;
+
+            ViewBag.CategoryId = new SelectList(categories, "CategoryId", "CategoryName");
+
+            // Si les données sont invalides, on réaffiche le formulaire
             if (ModelState.IsValid)
             {
-
-                // Retrieve the product being edited from the database
+                // Récupérer le produit à modifier
                 Product product = ProductRepository.GetById(model.ProductId);
-                // Update the product object with the data in the model object
+                if (product == null)
+                    return NotFound();
+
+                // Mettre à jour les champs
                 product.Name = model.Name;
                 product.Price = model.Price;
                 product.QteStock = model.QteStock;
                 product.CategoryId = model.CategoryId;
-                // If the user wants to change the photo, a new photo will be
-                // uploaded and the Photo property on the model object receives
-                // the uploaded photo. If the Photo property is null, user did
-                // not upload a new photo and keeps his existing photo
+
+                // Si une nouvelle image est envoyée, on supprime l'ancienne
+                // puis on enregistre la nouvelle dans wwwroot/images
                 if (model.ImagePath != null)
                 {
-                    // If a new photo is uploaded, the existing photo must be
-                    // deleted. So check if there is an existing photo and delete
                     if (model.ExistingImagePath != null)
                     {
                         string filePath = Path.Combine(hostingEnvironment.WebRootPath, "images", model.ExistingImagePath);
                         System.IO.File.Delete(filePath);
                     }
-                    // Save the new photo in wwwroot/images folder and update
-                    // PhotoPath property of the product object which will be
-                    // eventually saved in the database
                     product.Image = ProcessUploadedFile(model);
                 }
-                // Call update method on the repository service passing it the
-                // product object to update the data in the database table
+
                 Product updatedProduct = ProductRepository.Update(product);
                 if (updatedProduct != null)
                     return RedirectToAction("Index");
                 else
                     return NotFound();
-
             }
             return View(model);
         }
+
         [NonAction]
         private string ProcessUploadedFile(EditViewModel model)
         {
@@ -184,6 +215,9 @@ namespace WebApplication2.Controllers
         // GET: Product/Delete/5
         public ActionResult Delete(int id)
         {
+            var categories = CategRepository.GetAll();
+            ViewData["Categories"] = categories;
+
             var product = ProductRepository.GetById(id);
             if (product == null)
                 return NotFound();
@@ -199,16 +233,22 @@ namespace WebApplication2.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-     
-
         // GET: Product/ByCategory/2
         public ActionResult ByCategory(int? id)
         {
+            var categories = CategRepository.GetAll();
+            ViewData["Categories"] = categories;
+
             var result = ProductRepository.GetProductsByCategID(id);
             return View("Index", result);
         }
+
+        // GET: Product/Search?val=...
         public ActionResult Search(string val)
         {
+            var categories = CategRepository.GetAll();
+            ViewData["Categories"] = categories;
+
             var result = ProductRepository.FindByName(val);
             return View("Index", result);
         }

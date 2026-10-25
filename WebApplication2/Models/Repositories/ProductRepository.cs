@@ -65,5 +65,10 @@ namespace WebApplication2.Models.Repositories
             .Include(p => p.Category).ToList();
 
         }
+        public IQueryable<Product> GetAllProducts()
+
+        {
+            return context.Products.Include(p => p.Category);
+        }
     }
 }
